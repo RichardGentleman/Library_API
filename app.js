@@ -100,14 +100,16 @@ bookRouter
     }
   })
   .delete((req, res) => {
-    const book = library[req.params.id];
-    if (book) {
-      res.status(200).send(book);
-    } else if (isNaN(req.params.id)) {
+    const toBeDeleted = library[req.params.id];
+
+    if (isNaN(req.params.id)) {
       res.status(400).send("Invalid ID format supplied");
-    } else if (!book) {
+    } else if (!toBeDeleted) {
       res.status(404).send("Book not found");
-    }
+    } else if (toBeDeleted) {
+      const updatedList = library.filter(book => book.id !== toBeDeleted.id);
+      res.status(200).send(updatedList);
+    } 
   });
 
 app.use(bookRouter);
