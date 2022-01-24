@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const joi = require("joi");
+app.use(express.json());
 
 const library = [
   {
@@ -26,13 +27,16 @@ const library = [
   },
 ];
 
-app.get("/book", (req, res) => {
-  const books = [];
-  library.forEach((book) => {
-    books.push(book);
+const validateFunction = (book) => {
+  const scheme = joi.object({
+    title: joi.string().required(),
+    author: joi.string().required(),
+    pages: joi.number().optional(),
+    tags: joi.array().optional(),
+    id: joi.number().optional(),
   });
-  res.status(200).send(books);
-});
+  return scheme.validate(book);
+}
 
 app.get("/book/tags", (req, res) => {
   const tags = [];
@@ -43,27 +47,25 @@ app.get("/book/tags", (req, res) => {
   res.status(200).send(filteredTagsArray);
 });
 
-app.use(express.json());
-app.post("/book", (req, res) => {
-  const books = [];
-  const newBook = req.body;
-  library.forEach((book) => books.push(book));
-  newBook["id"] = books.length;
-  const updatedBooksArray = [...books, newBook];
-
-  const scheme = joi.object({
-    title: joi.string().required(),
-    author: joi.string().required(),
-    pages: joi.number(),
-    tags: joi.array(),
-    id: joi.number(),
-  });
-  const result = scheme.validate(newBook);
-  result.error ? res.status(405).send("New book not valid") : res.status(200).send(updatedBooksArray);
-});
-
 const bookRouter = express.Router();
 bookRouter
+  .route("/book")
+  .get((req, res) => {
+    const books = [];
+    library.forEach((book) => {
+      books.push(book);
+    });
+    res.status(200).send(books);
+  })
+  .post((req, res) => {
+  const book = req.body;
+  book["id"] = 0;
+  validateFunction(book).error ? res.status(405).send("New book not valid") : res.status(200).send(book);
+});
+app.use(bookRouter);
+
+const bookIdRouter = express.Router();
+bookIdRouter
   .route("/book/:id")
   .get((req, res) => {
     const book = library[req.params.id];
@@ -78,21 +80,12 @@ bookRouter
   .put((req, res) => {
     const book = library[req.params.id];
     if (book) {
-      book["title"] = req.body.title;
-      book["author"] = req.body.author;
-      book["pages"] = req.body.pages;
-      book["tags"] = req.body.tags;
-      book["id"] = req.params.id;
-
-      const scheme = joi.object({
-        title: joi.string().required(),
-        author: joi.string().required(),
-        pages: joi.number(),
-        tags: joi.array(),
-      });
-      const result = scheme.validate(req.body);
-      result.error ? res.status(405).send("New book not valid") : res.status(200).send(library);
-
+      book.title = req.body.title;
+      book.author = req.body.author;
+      book.pages = req.body.pages;
+      book.tags = req.body.tags;
+      book.id = req.params.id;
+      validateFunction(req.body).error ? res.status(405).send("New book not valid") : res.status(200).send(library);
     } else if (isNaN(req.params.id)) {
       res.status(400).send("Invalid ID format supplied");
     } else if (!book) {
@@ -112,7 +105,7 @@ bookRouter
     } 
   });
 
-app.use(bookRouter);
+app.use(bookIdRouter);
 
 app.listen(3002, () => {
   console.log("Server is running on port 3002");
