@@ -85,7 +85,7 @@ bookIdRouter
       book.pages = req.body.pages;
       book.tags = req.body.tags;
       book.id = req.params.id;
-      validateFunction(req.body).error ? res.status(405).send("New book not valid") : res.status(200).send(library);
+      validateFunction(req.body).error ? res.status(405).send("New book not valid") : res.status(200).send(book);
     } else if (isNaN(req.params.id)) {
       res.status(400).send("Invalid ID format supplied");
     } else if (!book) {
@@ -100,8 +100,7 @@ bookIdRouter
     } else if (!toBeDeleted) {
       res.status(404).send("Book not found");
     } else if (toBeDeleted) {
-      const updatedList = library.filter(book => book.id !== toBeDeleted.id);
-      res.status(200).send(updatedList);
+      res.status(200).send(toBeDeleted);
     } 
   });
 
