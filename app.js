@@ -1,42 +1,9 @@
-const express = require("express");
+import express from "express";
+import { library } from "./sourceData/sourceData.mjs";
+import { validateFunction } from "./validation/validate.mjs";
+import { bookRouter, bookIdRouter } from "./routers/bookRouter.mjs";
 const app = express();
-const joi = require("joi");
 app.use(express.json());
-
-const library = [
-  {
-    title: "Robinson Crusoe",
-    author: "Daniel Defoe",
-    pages: 300,
-    tags: ["adventure", "history"],
-    id: 0,
-  },
-  {
-    title: "The Unbearable Lightness of Being",
-    author: "Milan Kundera",
-    pages: 250,
-    tags: ["philosophical", "novel"],
-    id: 1,
-  },
-  {
-    title: "Nausea",
-    author: "Jean-Paul Sartre",
-    pages: 120,
-    tags: ["philosophical", "existentialism", "novel"],
-    id: 2,
-  },
-];
-
-const validateFunction = (book) => {
-  const scheme = joi.object({
-    title: joi.string().required(),
-    author: joi.string().required(),
-    pages: joi.number().optional(),
-    tags: joi.array().optional(),
-    id: joi.number().optional(),
-  });
-  return scheme.validate(book);
-}
 
 app.get("/book/tags", (req, res) => {
   const tags = [];
@@ -47,7 +14,6 @@ app.get("/book/tags", (req, res) => {
   res.status(200).send(filteredTagsArray);
 });
 
-const bookRouter = express.Router();
 bookRouter
   .route("/book")
   .get((req, res) => {
@@ -64,7 +30,6 @@ bookRouter
 });
 app.use(bookRouter);
 
-const bookIdRouter = express.Router();
 bookIdRouter
   .route("/book/:id")
   .get((req, res) => {
