@@ -12,6 +12,8 @@
   "type": "module",
   "dependencies": {
     "express": "^4.17.1",
-    "joi": "^17.5.0"
+    "joi": "^17.5.0",
+    "sequelize": "^6.15.0",
+    "sqlite3": "^5.0.2"
   }
 }
